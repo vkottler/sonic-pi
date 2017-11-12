@@ -13,11 +13,10 @@ define :play_melody do |m|
 	}
 end
 
-play_melody(VTK::MELODY3)
-puts VTK::MELODY3.keys
-for note in VTK::MELODY3.notes
-	puts note.scaleInd
-end
+play_melody(VTK::MELODY1)
+VTK::MELODY1.key = :D4
+VTK::MELODY1.initialize_keys()
+play_melody(VTK::MELODY1)
 
 # Bass
 #in_thread do

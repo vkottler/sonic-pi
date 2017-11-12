@@ -1,96 +1,97 @@
-module VTK
+module VTK; end
 
-	class Note
-		def initialize(scaleInd, duration)
-			@scaleInd = scaleInd
-			@duration = duration
-		end
+include VTK
 
-		attr_accessor :scaleInd
-		attr_accessor :duration
+# Note metadata, add 'release' etc. in future
+class Note
+
+	def initialize(scaleInd, duration)
+		@scaleInd = scaleInd
+		@duration = duration
 	end
 
-	class Melody
-		def initialize(key, scale, notes)
-			@key = key
-			@scale = scale
-			@notes = notes
-			@keys = []
-
-			if not notes.kind_of?(Array) then
-				raise "Indexes and durations must be provided as a list."
-			end
-
-			for note in notes do
-				if not note.kind_of?(Note) then
-					raise "'note' in 'notes' was not of class Note."
-				end
-				if note.scaleInd == nil
-					@keys.push(key)
-				elsif note.scaleInd < 0
-					@keys.push(key - 12) #* (1 + (-note.scaleInd / 8)))
-					note.scaleInd = 8 - ((-note.scaleInd) % 8) - 1
-				elsif note.scaleInd > 7
-					@keys.push(key + 12) #* (1 + (note.scaleInd / 8)))
-					note.scaleInd = note.scaleInd % 8
-				else
-					@keys.push(key)
-				end
-			end
-
-		end
-
-		attr_accessor :notes
-		attr_accessor :scale
-		attr_accessor :key
-		attr_accessor :keys
-	end
-
-	MELODY1 = Melody.new(
-		:C4,
-		:minor,
-		[
-			Note.new(nil, 4.5),
-			Note.new(0, 0.5),
-			Note.new(2, 1.0),
-			Note.new(3, 0.5),
-			Note.new(2, 0.5),
-			Note.new(1, 2.0)
-		]
-	)
-
-	MELODY2 = Melody.new(
-		:C4,
-		:minor,
-		[ Note.new(-1, 1),
-			Note.new(0, 1)
-		]
-	)
-
-	MELODY3 = Melody.new(
-		:C4,
-		:minor,
-		[
-			Note.new(-7, 1),
-			Note.new(-6, 1),
-			Note.new(-5, 1),
-			Note.new(-4, 1),
-			Note.new(-3, 1),
-			Note.new(-2, 1),
-			Note.new(-1, 1),
-			Note.new(0, 1),
-			Note.new(1, 1),
-			Note.new(2, 1),
-			Note.new(3, 1),
-			Note.new(4, 1),
-			Note.new(5, 1),
-			Note.new(6, 1),
-			Note.new(7, 1),
-		]
-	)
-
+	attr_accessor :scaleInd
+	attr_accessor :duration
 end
 
+# Melody data, ideally an immutable set of note indices where key
+# and scale mutate to produce different sounds
+class Melody
+
+	# Resolve scale index by moving an octave up or down in key,
+	# this is required because SonicPi chooses to use "rings"
+	# when indexing scales. Highly inconvenient for melodies that
+	# begin and end in different octave numbers
+	def initialize_keys()
+		@keys = []
+		restore_original_notes()
+		for note in @notes do
+			if note.scaleInd == nil
+				@keys.push(@key)
+			elsif note.scaleInd < 0
+				numOctavesDown = (-note.scaleInd / 7.0).ceil
+				@keys.push(@key - 12 * numOctavesDown)
+				note.scaleInd = 8 - ((-note.scaleInd) % 8) - numOctavesDown
+			elsif note.scaleInd >= 7
+				numOctavesUp = (note.scaleInd / 8.0).ceil
+				@keys.push(@key + 12 * numOctavesUp)
+				note.scaleInd = note.scaleInd % 7
+			else
+				@keys.push(@key)
+			end
+		end
+	end
+
+	# Initialization manipulates scale indices, if these need to be
+	# update we need to restore them to re-calculate indices
+	def restore_original_notes()
+		@notes = []
+		for note in @original_notes do
+			@notes.push(note)
+		end
+	end
+
+	def initialize(key, scale, notes)
+		@key = key
+		@scale = scale
+		@original_notes = []
+		@notes = notes
+
+		if not notes.kind_of?(Array) then
+			raise "Indexes and durations must be provided as a list."
+		end
+
+		for note in notes do
+
+			# Enforce typing
+			if not note.kind_of?(Note) then
+				raise "'note' in 'notes' was not of class Note."
+			end
+
+			# Preserve original note indices
+			@original_notes.push(note)
+		end
+		
+		initialize_keys()
+	end
+
+	attr_accessor :notes
+	attr_accessor :scale
+	attr_accessor :key
+	attr_accessor :keys
+end
+
+MELODY1 = Melody.new(
+	:C4, :minor,
+	[
+		Note.new(nil, 4.5),
+		Note.new(0, 0.5),
+		Note.new(2, 1.0),
+		Note.new(3, 0.5),
+		Note.new(2, 0.5),
+		Note.new(1, 2.0)
+	]
+)
 
 module MelodyNotes
   MELODY1 = [nil, :C4, :Eb4, :F4, :Eb4, :D4]
