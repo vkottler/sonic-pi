@@ -7,30 +7,17 @@ num_riffs = 4
 define :play_melody do |m|
 	i = 0
 	m.notes.size.times {
-		play scale(m.key, m.scale)[m.notes[i].scaleInd], release: m.notes[i].duration
+		play scale(m.keys[i], m.scale)[m.notes[i].scaleInd], release: m.notes[i].duration
 		sleep m.notes[i].duration
 		i += 1 
 	}
 end
 
-test = VTK::Melody.new(
-	:C4,
-	:minor,
-	[
-		VTK::Note.new(0, 1.0),
-		VTK::Note.new(1, 1.0),
-		VTK::Note.new(2, 1.0),
-		VTK::Note.new(3, 1.0)
-	]
-)
-
-play_melody(test)
-
-sleep 4.0
-
-test.key = :C3
-
-play_melody(test)
+play_melody(VTK::MELODY3)
+puts VTK::MELODY3.keys
+for note in VTK::MELODY3.notes
+	puts note.scaleInd
+end
 
 # Bass
 #in_thread do

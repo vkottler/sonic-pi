@@ -1,4 +1,5 @@
 module VTK
+
 	class Note
 		def initialize(scaleInd, duration)
 			@scaleInd = scaleInd
@@ -14,22 +15,82 @@ module VTK
 			@key = key
 			@scale = scale
 			@notes = notes
+			@keys = []
 
 			if not notes.kind_of?(Array) then
 				raise "Indexes and durations must be provided as a list."
 			end
+
 			for note in notes do
 				if not note.kind_of?(Note) then
 					raise "'note' in 'notes' was not of class Note."
 				end
+				if note.scaleInd == nil
+					@keys.push(key)
+				elsif note.scaleInd < 0
+					@keys.push(key - 12) #* (1 + (-note.scaleInd / 8)))
+					note.scaleInd = 8 - ((-note.scaleInd) % 8) - 1
+				elsif note.scaleInd > 7
+					@keys.push(key + 12) #* (1 + (note.scaleInd / 8)))
+					note.scaleInd = note.scaleInd % 8
+				else
+					@keys.push(key)
+				end
 			end
+
 		end
 
 		attr_accessor :notes
 		attr_accessor :scale
 		attr_accessor :key
+		attr_accessor :keys
 	end
+
+	MELODY1 = Melody.new(
+		:C4,
+		:minor,
+		[
+			Note.new(nil, 4.5),
+			Note.new(0, 0.5),
+			Note.new(2, 1.0),
+			Note.new(3, 0.5),
+			Note.new(2, 0.5),
+			Note.new(1, 2.0)
+		]
+	)
+
+	MELODY2 = Melody.new(
+		:C4,
+		:minor,
+		[ Note.new(-1, 1),
+			Note.new(0, 1)
+		]
+	)
+
+	MELODY3 = Melody.new(
+		:C4,
+		:minor,
+		[
+			Note.new(-7, 1),
+			Note.new(-6, 1),
+			Note.new(-5, 1),
+			Note.new(-4, 1),
+			Note.new(-3, 1),
+			Note.new(-2, 1),
+			Note.new(-1, 1),
+			Note.new(0, 1),
+			Note.new(1, 1),
+			Note.new(2, 1),
+			Note.new(3, 1),
+			Note.new(4, 1),
+			Note.new(5, 1),
+			Note.new(6, 1),
+			Note.new(7, 1),
+		]
+	)
+
 end
+
 
 module MelodyNotes
   MELODY1 = [nil, :C4, :Eb4, :F4, :Eb4, :D4]
