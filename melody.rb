@@ -1,3 +1,36 @@
+module VTK
+	class Note
+		def initialize(scaleInd, duration)
+			@scaleInd = scaleInd
+			@duration = duration
+		end
+
+		attr_accessor :scaleInd
+		attr_accessor :duration
+	end
+
+	class Melody
+		def initialize(key, scale, notes)
+			@key = key
+			@scale = scale
+			@notes = notes
+
+			if not notes.kind_of?(Array) then
+				raise "Indexes and durations must be provided as a list."
+			end
+			for note in notes do
+				if not note.kind_of?(Note) then
+					raise "'note' in 'notes' was not of class Note."
+				end
+			end
+		end
+
+		attr_accessor :notes
+		attr_accessor :scale
+		attr_accessor :key
+	end
+end
+
 module MelodyNotes
   MELODY1 = [nil, :C4, :Eb4, :F4, :Eb4, :D4]
   MELODY_T1 = [4.5, 0.5, 1.0, 0.5, 0.5, 2.0]
